@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { db } from '@/lib/db/connection'
-import { notes, type Note } from '@/lib/db/schema/notes'
+import { notes, summaries, type Note, type Summary } from '@/lib/db/schema/notes'
 import { eq, desc, asc, count, or, ilike, sql, and } from 'drizzle-orm'
 
 export async function getUserNotes() {
@@ -194,5 +194,88 @@ export async function searchUserNotes({
     } catch (error) {
         console.error('노트 검색 실패:', error)
         return { notes: [], totalCount: 0 }
+    }
+}
+
+// 노트의 요약 조회
+export async function getNoteSummary(noteId: string): Promise<Summary | null> {
+    const supabase = await createClient()
+
+    const {
+        data: { user },
+        error
+    } = await supabase.auth.getUser()
+
+    if (error || !user) {
+        return null
+    }
+
+    try {
+        // 노트 소유자 확인
+        const [note] = await db
+            .select()
+            .from(notes)
+            .where(eq(notes.id, noteId))
+            .limit(1)
+
+        if (!note || note.userId !== user.id) {
+            return null
+        }
+
+        // 요약 조회
+        const [summary] = await db
+            .select()
+            .from(summaries)
+            .where(eq(summaries.noteId, noteId))
+            .orderBy(desc(summaries.createdAt))
+            .limit(1)
+
+        return summary || null
+    } catch (error) {
+        console.error('요약 조회 실패:', error)
+        return null
+    }
+}
+
+// 노트와 요약을 함께 조회
+export async function getNoteWithSummary(noteId: string): Promise<{ note: Note; summary: Summary | null } | null> {
+    const supabase = await createClient()
+
+    const {
+        data: { user },
+        error
+    } = await supabase.auth.getUser()
+
+    if (error || !user) {
+        return null
+    }
+
+    try {
+        // 노트 조회
+        const [note] = await db
+            .select()
+            .from(notes)
+            .where(eq(notes.id, noteId))
+            .limit(1)
+
+        if (!note || note.userId !== user.id) {
+            return null
+        }
+
+        // 요약 조회
+        const [summary] = await db
+            .select()
+            .from(summaries)
+            .where(eq(summaries.noteId, noteId))
+            .orderBy(desc(summaries.createdAt))
+            .limit(1)
+
+        return {
+            note,
+            summary: summary || null
+        }
+    } catch (error) {
+        console.error('노트 및 요약 조회 실패:', error)
+        return null
     }
 }

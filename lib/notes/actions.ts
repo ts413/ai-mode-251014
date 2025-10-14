@@ -11,6 +11,39 @@ import { notes, summaries, noteTags } from '@/lib/db/schema/notes'
 import { eq } from 'drizzle-orm'
 import { generateContent, createSummaryPrompt, createTagPrompt } from '@/lib/ai/gemini'
 
+// 최소 요약 생성 길이 (50자)
+const MIN_SUMMARY_LENGTH = 50
+
+// 자동 요약 생성 헬퍼 함수
+async function generateAutoSummary(noteId: string, content: string | null): Promise<void> {
+    // 내용이 없거나 최소 길이 미만이면 스킵
+    if (!content || content.trim().length < MIN_SUMMARY_LENGTH) {
+        console.log(`요약 생성 스킵: 내용이 ${MIN_SUMMARY_LENGTH}자 미만입니다.`)
+        return
+    }
+
+    try {
+        // 기존 요약 삭제
+        await db.delete(summaries).where(eq(summaries.noteId, noteId))
+
+        // AI 요약 생성
+        const summaryPrompt = createSummaryPrompt(content)
+        const summaryContent = await generateContent(summaryPrompt)
+
+        // 요약 저장
+        await db.insert(summaries).values({
+            noteId: noteId,
+            model: 'gemini-2.0-flash-001',
+            content: summaryContent
+        })
+
+        console.log('자동 요약 생성 성공:', noteId)
+    } catch (error) {
+        // 요약 생성 실패해도 노트 저장은 성공으로 처리
+        console.error('자동 요약 생성 실패 (노트는 저장됨):', error)
+    }
+}
+
 export async function createNote(formData: FormData) {
     const supabase = await createClient()
 
@@ -35,6 +68,8 @@ export async function createNote(formData: FormData) {
         content: content.trim() || null
     })
 
+    let noteId: string | undefined
+
     try {
         // Supabase 직접 연결로 노트 생성
         const result = await createNoteSupabase({
@@ -43,6 +78,8 @@ export async function createNote(formData: FormData) {
             content: validatedData.content
         })
         console.log('노트 생성 성공:', result)
+        
+        noteId = result.id
 
         // 캐시 무효화
         revalidatePath('/notes')
@@ -56,6 +93,11 @@ export async function createNote(formData: FormData) {
         }
         
         throw new Error(`노트 저장에 실패했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`)
+    }
+
+    // 노트 생성 성공 후 자동 요약 생성
+    if (noteId) {
+        await generateAutoSummary(noteId, validatedData.content)
     }
 
     // 성공 시 노트 목록 페이지로 리다이렉트
@@ -123,6 +165,11 @@ export async function updateNote(
 
         // 노트 업데이트
         await db.update(notes).set(updateData).where(eq(notes.id, noteId))
+
+        // 내용이 변경된 경우 자동 요약 재생성
+        if (updateData.content !== undefined) {
+            await generateAutoSummary(noteId, updateData.content)
+        }
 
         // 캐시 무효화
         revalidatePath('/notes')

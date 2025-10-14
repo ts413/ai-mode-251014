@@ -1,7 +1,8 @@
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { getNoteById } from '@/lib/notes/queries'
+import { getNoteWithSummary } from '@/lib/notes/queries'
 import { NoteEditor } from '@/components/notes/note-editor'
+import { NoteSummary } from '@/components/notes/note-summary'
 
 export default async function NoteDetailPage({
     params
@@ -19,12 +20,22 @@ export default async function NoteDetailPage({
     }
 
     const { id } = await params
-    const note = await getNoteById(id)
-    if (!note) {
+    const result = await getNoteWithSummary(id)
+    if (!result) {
         notFound()
     }
 
-    return <NoteEditor note={note} />
+    const { note, summary } = result
+
+    return (
+        <div className="max-w-4xl mx-auto p-6">
+            {/* AI 요약 섹션 */}
+            <NoteSummary summary={summary} />
+            
+            {/* 노트 에디터 */}
+            <NoteEditor note={note} />
+        </div>
+    )
 }
 
 export const metadata = {
