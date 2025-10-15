@@ -223,6 +223,7 @@ pnpm run db:push
 DATABASE_URL=postgresql://postgres.username:password@host:port/database
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
+NEXT_PUBLIC_SITE_URL=https://your-vercel-app.vercel.app
 GOOGLE_API_KEY=your_google_api_key
 ```
 
