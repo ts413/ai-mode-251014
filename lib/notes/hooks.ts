@@ -5,7 +5,7 @@
 
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { updateNote } from '@/lib/notes/actions'
 
 // AI 처리 상태 타입
@@ -81,9 +81,12 @@ export function useEditableContent<T>(
   onSave?: (value: T) => Promise<boolean>,
   onCancel?: () => void
 ) {
+  // initialValue를 안정화하여 무한 렌더링 방지
+  const stableInitialValue = useMemo(() => initialValue, [JSON.stringify(initialValue)])
+  
   const [isEditing, setIsEditing] = useState(false)
-  const [value, setValue] = useState<T>(initialValue)
-  const [originalValue, setOriginalValue] = useState<T>(initialValue)
+  const [value, setValue] = useState<T>(stableInitialValue)
+  const [originalValue, setOriginalValue] = useState<T>(stableInitialValue)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 

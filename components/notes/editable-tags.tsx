@@ -49,11 +49,11 @@ export function EditableTags({
     }
   )
 
-  // 초기값 업데이트
+  // initialTags가 변경될 때만 업데이트
   useEffect(() => {
     const tagStrings = initialTags.map(t => t.tag)
     editableContent.updateInitialValue(tagStrings)
-  }, [initialTags, editableContent]) // 의존성 배열 수정
+  }, [initialTags, editableContent.updateInitialValue])
 
   // 새 태그 추가
   const addTag = () => {
