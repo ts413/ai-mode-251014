@@ -1,169 +1,197 @@
+// lib/notes/hooks.ts
+// 노트 관련 React 훅들
+// AI 처리 상태 관리 및 노트 편집 상태 관리
+// 관련 파일: components/notes/ai-status.tsx, components/notes/note-editor.tsx
+
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { updateNote, type UpdateNoteInput } from './actions'
-import { useDebounce } from '@/lib/utils/debounce'
+import { useState, useCallback } from 'react'
 
-export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
+// AI 처리 상태 타입
+export type AIStatus = 'IDLE' | 'LOADING' | 'COMPLETED' | 'ERROR'
 
-export interface UseAutoSaveProps {
-    noteId: string
-    initialTitle: string
-    initialContent: string
-    delay?: number
+// AI 상태 관리 훅
+export function useAIStatus() {
+  const [status, setStatus] = useState<AIStatus>('IDLE')
+  const [error, setError] = useState<string | null>(null)
+
+  const setLoading = useCallback(() => {
+    setStatus('LOADING')
+    setError(null)
+  }, [])
+
+  const setCompleted = useCallback(() => {
+    setStatus('COMPLETED')
+    setError(null)
+  }, [])
+
+  const setErrorStatus = useCallback((errorMessage: string) => {
+    setStatus('ERROR')
+    setError(errorMessage)
+  }, [])
+
+  const reset = useCallback(() => {
+    setStatus('IDLE')
+    setError(null)
+  }, [])
+
+  return {
+    status,
+    error,
+    setLoading,
+    setCompleted,
+    setError: setErrorStatus,
+    reset,
+    isLoading: status === 'LOADING',
+    isCompleted: status === 'COMPLETED',
+    isError: status === 'ERROR',
+    isIdle: status === 'IDLE'
+  }
 }
 
-export function useAutoSave({
-    noteId,
-    initialTitle,
-    initialContent,
-    delay = 3000
-}: UseAutoSaveProps) {
-    const [title, setTitle] = useState(initialTitle)
-    const [content, setContent] = useState(initialContent)
-    const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
-    const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
+// AI 처리 함수 래퍼
+export function useAIProcessor<T extends any[], R>(
+  processor: (...args: T) => Promise<R>
+) {
+  const aiStatus = useAIStatus()
 
-    // 변경사항이 있는지 확인
-    const hasChanges = title !== initialTitle || content !== initialContent
-
-    // 저장 함수
-    const saveNote = useCallback(
-        async (data: UpdateNoteInput) => {
-            setSaveStatus('saving')
-
-            try {
-                const result = await updateNote(noteId, data)
-
-                if (result.success) {
-                    setSaveStatus('saved')
-                    setLastSavedAt(new Date())
-
-                    // 2초 후 saved 상태 해제
-                    setTimeout(() => {
-                        setSaveStatus('idle')
-                    }, 2000)
-                } else {
-                    setSaveStatus('error')
-                    console.error('노트 저장 실패:', result.error)
-                }
-            } catch (error) {
-                setSaveStatus('error')
-                console.error('노트 저장 오류:', error)
-            }
-        },
-        [noteId]
-    )
-
-    // 디바운스된 저장 함수
-    const debouncedSave = useDebounce((data: UpdateNoteInput) => {
-        saveNote(data)
-    }, delay)
-
-    // 즉시 저장 함수 (Cmd/Ctrl+S 용)
-    const saveImmediately = useCallback(() => {
-        if (hasChanges) {
-            const data: UpdateNoteInput = {}
-            if (title !== initialTitle) data.title = title
-            if (content !== initialContent) data.content = content
-            saveNote(data)
-        }
-    }, [title, content, initialTitle, initialContent, hasChanges, saveNote])
-
-    // 제목 변경 핸들러
-    const handleTitleChange = useCallback(
-        (newTitle: string) => {
-            setTitle(newTitle)
-
-            if (newTitle !== initialTitle) {
-                debouncedSave({ title: newTitle })
-            }
-        },
-        [initialTitle, debouncedSave]
-    )
-
-    // 내용 변경 핸들러
-    const handleContentChange = useCallback(
-        (newContent: string) => {
-            setContent(newContent)
-
-            if (newContent !== initialContent) {
-                debouncedSave({ content: newContent })
-            }
-        },
-        [initialContent, debouncedSave]
-    )
-
-    // 로컬 스토리지 백업
-    useEffect(() => {
-        if (hasChanges) {
-            localStorage.setItem(
-                `note-draft-${noteId}`,
-                JSON.stringify({
-                    title,
-                    content,
-                    lastModified: Date.now()
-                })
-            )
-        } else {
-            localStorage.removeItem(`note-draft-${noteId}`)
-        }
-    }, [title, content, noteId, hasChanges])
-
-    // 키보드 단축키 핸들러
-    useEffect(() => {
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if ((event.metaKey || event.ctrlKey) && event.key === 's') {
-                event.preventDefault()
-                saveImmediately()
-            }
-        }
-
-        document.addEventListener('keydown', handleKeyDown)
-        return () => document.removeEventListener('keydown', handleKeyDown)
-    }, [saveImmediately])
-
-    // 페이지 언로드 시 변경사항 확인
-    useEffect(() => {
-        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-            if (hasChanges && saveStatus !== 'saving') {
-                event.preventDefault()
-                event.returnValue =
-                    '저장되지 않은 변경사항이 있습니다. 정말 나가시겠습니까?'
-            }
-        }
-
-        window.addEventListener('beforeunload', handleBeforeUnload)
-        return () =>
-            window.removeEventListener('beforeunload', handleBeforeUnload)
-    }, [hasChanges, saveStatus])
-
-    return {
-        title,
-        content,
-        saveStatus,
-        lastSavedAt,
-        hasChanges,
-        handleTitleChange,
-        handleContentChange,
-        saveImmediately
-    }
-}
-
-// 로컬 스토리지에서 드래프트 복원
-export function restoreDraft(noteId: string) {
+  const process = useCallback(async (...args: T): Promise<R | null> => {
     try {
-        const draftData = localStorage.getItem(`note-draft-${noteId}`)
-        if (draftData) {
-            const draft = JSON.parse(draftData)
-            return {
-                title: draft.title || '',
-                content: draft.content || '',
-                lastModified: new Date(draft.lastModified)
-            }
-        }
+      aiStatus.setLoading()
+      const result = await processor(...args)
+      aiStatus.setCompleted()
+      return result
     } catch (error) {
-        console.error('드래프트 복원 실패:', error)
+      const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다'
+      aiStatus.setError(errorMessage)
+      return null
     }
-    return null
+  }, [processor, aiStatus])
+
+  return {
+    ...aiStatus,
+    process
+  }
+}
+
+// 편집 가능한 콘텐츠 훅
+export function useEditableContent<T>(
+  initialValue: T,
+  onSave?: (value: T) => Promise<boolean>,
+  onCancel?: () => void
+) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [value, setValue] = useState<T>(initialValue)
+  const [originalValue, setOriginalValue] = useState<T>(initialValue)
+  const [isSaving, setIsSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // 편집 모드 시작
+  const startEditing = useCallback(() => {
+    setOriginalValue(value)
+    setIsEditing(true)
+    setError(null)
+  }, [value])
+
+  // 편집 모드 종료
+  const stopEditing = useCallback(() => {
+    setIsEditing(false)
+    setError(null)
+  }, [])
+
+  // 편집 취소
+  const cancelEditing = useCallback(() => {
+    setValue(originalValue)
+    setIsEditing(false)
+    setError(null)
+    onCancel?.()
+  }, [originalValue, onCancel])
+
+  // 편집 저장
+  const saveEditing = useCallback(async () => {
+    if (!onSave) {
+      setIsEditing(false)
+      return
+    }
+
+    try {
+      setIsSaving(true)
+      setError(null)
+      
+      const success = await onSave(value)
+      
+      if (success) {
+        setOriginalValue(value)
+        setIsEditing(false)
+      } else {
+        setError('저장에 실패했습니다')
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '저장 중 오류가 발생했습니다'
+      setError(errorMessage)
+    } finally {
+      setIsSaving(false)
+    }
+  }, [value, onSave])
+
+  // 값 변경
+  const updateValue = useCallback((newValue: T) => {
+    setValue(newValue)
+    setError(null)
+  }, [])
+
+  // 초기값 업데이트 (외부에서 값이 변경된 경우)
+  const updateInitialValue = useCallback((newValue: T) => {
+    setValue(newValue)
+    setOriginalValue(newValue)
+    setIsEditing(false)
+    setError(null)
+  }, [])
+
+  return {
+    isEditing,
+    value,
+    originalValue,
+    isSaving,
+    error,
+    startEditing,
+    stopEditing,
+    cancelEditing,
+    saveEditing,
+    updateValue,
+    updateInitialValue,
+    hasChanges: JSON.stringify(value) !== JSON.stringify(originalValue)
+  }
+}
+
+// 자동 저장 훅
+export function useAutoSave<T>(
+  value: T,
+  onSave: (value: T) => Promise<void>,
+  delay: number = 1000
+) {
+  const [isSaving, setIsSaving] = useState(false)
+  const [lastSaved, setLastSaved] = useState<Date | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const save = useCallback(async (currentValue: T) => {
+    try {
+      setIsSaving(true)
+      setError(null)
+      await onSave(currentValue)
+      setLastSaved(new Date())
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '자동 저장 중 오류가 발생했습니다'
+      setError(errorMessage)
+    } finally {
+      setIsSaving(false)
+    }
+  }, [onSave])
+
+  return {
+    isSaving,
+    lastSaved,
+    error,
+    save
+  }
 }
