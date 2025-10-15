@@ -223,11 +223,17 @@ pnpm run db:push
 DATABASE_URL=postgresql://postgres.username:password@host:port/database
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
-NEXT_PUBLIC_SITE_URL=https://your-vercel-app.vercel.app
 GOOGLE_API_KEY=your_google_api_key
 ```
 
-3. 배포 후 환경 변수가 제대로 설정되었는지 확인
+3. **중요**: Supabase Dashboard에서 Site URL 설정:
+   - Supabase Dashboard → Authentication → URL Configuration
+   - Site URL을 Vercel 배포 URL로 변경 (예: `https://your-app.vercel.app`)
+   - Redirect URLs에 `https://your-app.vercel.app/auth/callback` 추가
+
+4. 배포 후 환경 변수가 제대로 설정되었는지 확인
+
+**참고**: `NEXT_PUBLIC_SITE_URL`은 선택사항입니다. 설정하지 않으면 자동으로 Vercel URL을 사용합니다.
 
 ### 환경 변수 확인 방법
 
