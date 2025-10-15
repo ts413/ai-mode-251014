@@ -40,7 +40,7 @@ describe('재생성 서버 액션', () => {
       const mockTags = ['태그1', '태그2']
 
       // Mock implementations
-      const mockCreateClient = require('@/lib/supabase/server').createClient
+      const mockCreateClient = import('@/lib/supabase/server').createClient
       mockCreateClient.mockResolvedValue({
         auth: {
           getUser: jest.fn().mockResolvedValue({
@@ -50,7 +50,7 @@ describe('재생성 서버 액션', () => {
         }
       })
 
-      const mockDb = require('@/lib/db/connection').db
+      const mockDb = import('@/lib/db/connection').db
       mockDb.select.mockReturnValue({
         from: jest.fn().mockReturnValue({
           where: jest.fn().mockReturnValue({
@@ -67,7 +67,7 @@ describe('재생성 서버 액션', () => {
         values: jest.fn().mockResolvedValue(undefined)
       })
 
-      const mockGenerateContent = require('@/lib/ai/gemini').generateContent
+      const mockGenerateContent = import('@/lib/ai/gemini').generateContent
       mockGenerateContent
         .mockResolvedValueOnce(mockSummary)
         .mockResolvedValueOnce(mockTags.join(', '))
@@ -84,7 +84,7 @@ describe('재생성 서버 액션', () => {
     it('재생성 횟수 제한 시 에러를 반환해야 함', async () => {
       // Mock setup
       const mockUser = { id: 'user-123' }
-      const mockCreateClient = require('@/lib/supabase/server').createClient
+      const mockCreateClient = import('@/lib/supabase/server').createClient
       mockCreateClient.mockResolvedValue({
         auth: {
           getUser: jest.fn().mockResolvedValue({
@@ -95,7 +95,7 @@ describe('재생성 서버 액션', () => {
       })
 
       // Mock limit check to return limit exceeded
-      const mockDb = require('@/lib/db/connection').db
+      const mockDb = import('@/lib/db/connection').db
       mockDb.select.mockReturnValue({
         from: jest.fn().mockReturnValue({
           where: jest.fn().mockReturnValue({
@@ -114,7 +114,7 @@ describe('재생성 서버 액션', () => {
 
     it('인증 실패 시 에러를 반환해야 함', async () => {
       // Mock setup
-      const mockCreateClient = require('@/lib/supabase/server').createClient
+      const mockCreateClient = import('@/lib/supabase/server').createClient
       mockCreateClient.mockResolvedValue({
         auth: {
           getUser: jest.fn().mockResolvedValue({
@@ -140,7 +140,7 @@ describe('재생성 서버 액션', () => {
       const mockNote = { id: 'note-123', userId: 'user-123', content: '테스트 내용' }
       const mockSummary = '테스트 요약'
 
-      const mockCreateClient = require('@/lib/supabase/server').createClient
+      const mockCreateClient = import('@/lib/supabase/server').createClient
       mockCreateClient.mockResolvedValue({
         auth: {
           getUser: jest.fn().mockResolvedValue({
@@ -150,7 +150,7 @@ describe('재생성 서버 액션', () => {
         }
       })
 
-      const mockDb = require('@/lib/db/connection').db
+      const mockDb = import('@/lib/db/connection').db
       mockDb.select.mockReturnValue({
         from: jest.fn().mockReturnValue({
           where: jest.fn().mockReturnValue({
@@ -167,7 +167,7 @@ describe('재생성 서버 액션', () => {
         values: jest.fn().mockResolvedValue(undefined)
       })
 
-      const mockGenerateContent = require('@/lib/ai/gemini').generateContent
+      const mockGenerateContent = import('@/lib/ai/gemini').generateContent
       mockGenerateContent.mockResolvedValue(mockSummary)
 
       // Test
@@ -187,7 +187,7 @@ describe('재생성 서버 액션', () => {
       const mockNote = { id: 'note-123', userId: 'user-123', content: '테스트 내용' }
       const mockTags = ['태그1', '태그2']
 
-      const mockCreateClient = require('@/lib/supabase/server').createClient
+      const mockCreateClient = import('@/lib/supabase/server').createClient
       mockCreateClient.mockResolvedValue({
         auth: {
           getUser: jest.fn().mockResolvedValue({
@@ -197,7 +197,7 @@ describe('재생성 서버 액션', () => {
         }
       })
 
-      const mockDb = require('@/lib/db/connection').db
+      const mockDb = import('@/lib/db/connection').db
       mockDb.select.mockReturnValue({
         from: jest.fn().mockReturnValue({
           where: jest.fn().mockReturnValue({
@@ -214,7 +214,7 @@ describe('재생성 서버 액션', () => {
         values: jest.fn().mockResolvedValue(undefined)
       })
 
-      const mockGenerateContent = require('@/lib/ai/gemini').generateContent
+      const mockGenerateContent = import('@/lib/ai/gemini').generateContent
       mockGenerateContent.mockResolvedValue(mockTags.join(', '))
 
       // Test
@@ -237,7 +237,7 @@ describe('재생성 횟수 제한', () => {
     it('사용자별 재생성 횟수를 올바르게 조회해야 함', async () => {
       // Mock setup
       const mockUser = { id: 'user-123' }
-      const mockCreateClient = require('@/lib/supabase/server').createClient
+      const mockCreateClient = import('@/lib/supabase/server').createClient
       mockCreateClient.mockResolvedValue({
         auth: {
           getUser: jest.fn().mockResolvedValue({
@@ -247,7 +247,7 @@ describe('재생성 횟수 제한', () => {
         }
       })
 
-      const mockDb = require('@/lib/db/connection').db
+      const mockDb = import('@/lib/db/connection').db
       mockDb.select.mockReturnValue({
         from: jest.fn().mockReturnValue({
           where: jest.fn().mockReturnValue({
@@ -268,7 +268,7 @@ describe('재생성 횟수 제한', () => {
     it('재생성 횟수 제한에 도달했을 때 올바르게 처리해야 함', async () => {
       // Mock setup
       const mockUser = { id: 'user-123' }
-      const mockCreateClient = require('@/lib/supabase/server').createClient
+      const mockCreateClient = import('@/lib/supabase/server').createClient
       mockCreateClient.mockResolvedValue({
         auth: {
           getUser: jest.fn().mockResolvedValue({
@@ -278,7 +278,7 @@ describe('재생성 횟수 제한', () => {
         }
       })
 
-      const mockDb = require('@/lib/db/connection').db
+      const mockDb = import('@/lib/db/connection').db
       mockDb.select.mockReturnValue({
         from: jest.fn().mockReturnValue({
           where: jest.fn().mockReturnValue({
@@ -298,7 +298,7 @@ describe('재생성 횟수 제한', () => {
 
     it('인증 실패 시 기본값을 반환해야 함', async () => {
       // Mock setup
-      const mockCreateClient = require('@/lib/supabase/server').createClient
+      const mockCreateClient = import('@/lib/supabase/server').createClient
       mockCreateClient.mockResolvedValue({
         auth: {
           getUser: jest.fn().mockResolvedValue({

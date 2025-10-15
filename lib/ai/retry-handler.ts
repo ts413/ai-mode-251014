@@ -3,7 +3,7 @@
 // 지수 백오프를 사용한 재시도, 재시도 횟수 제한, 재시도 조건 분류
 // 관련 파일: lib/ai/error-handler.ts, lib/ai/error-logger.ts
 
-import { AIError, ErrorType, calculateRetryDelay } from './error-handler'
+import { AIError, ErrorType, calculateRetryDelay, classifyError } from './error-handler'
 
 export interface RetryConfig {
   maxAttempts: number
@@ -59,7 +59,7 @@ export async function executeWithRetry<T>(
       }
     } catch (error) {
       const aiError = error instanceof Error ? 
-        require('./error-handler').classifyError(error) : 
+        classifyError(error) : 
         { type: 'UNKNOWN_ERROR' as ErrorType, canRetry: false } as AIError
       
       lastError = aiError

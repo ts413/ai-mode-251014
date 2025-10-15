@@ -7,8 +7,8 @@ import { createNoteSupabase } from '@/lib/db/supabase-db'
 import { insertNoteSchema } from '@/lib/db/schema/notes'
 import { z } from 'zod'
 import { db } from '@/lib/db/server-connection'
-import { notes, summaries, noteTags, aiRegenerations, editHistory } from '@/lib/db/schema/notes'
-import { eq, and, gte, count } from 'drizzle-orm'
+import { notes, summaries, noteTags, editHistory } from '@/lib/db/schema/notes'
+import { eq, desc } from 'drizzle-orm'
 import { generateContent, createSummaryPrompt, createTagPrompt } from '@/lib/ai/gemini'
 import { classifyError } from '@/lib/ai/error-handler'
 import { executeWithRetry } from '@/lib/ai/retry-handler'
@@ -21,7 +21,7 @@ const MIN_SUMMARY_LENGTH = 50
 const DAILY_REGENERATION_LIMIT = 10
 
 // 재생성 횟수 확인 함수 (임시로 비활성화)
-async function checkRegenerationLimit(userId: string): Promise<{
+async function checkRegenerationLimit(_userId: string): Promise<{
     canRegenerate: boolean
     currentCount: number
     limit: number
@@ -110,9 +110,9 @@ export async function getUserRegenerationCount(): Promise<{
 
 // 재생성 이력 저장 함수 (임시로 비활성화)
 async function saveRegenerationHistory(
-    noteId: string, 
-    userId: string, 
-    type: 'summary' | 'tags' | 'both'
+    _noteId: string, 
+    _userId: string, 
+    _type: 'summary' | 'tags' | 'both'
 ): Promise<void> {
     // 임시로 비활성화 - ai_regenerations 테이블이 없어서 에러 발생
     return
@@ -166,11 +166,13 @@ async function generateAutoSummary(noteId: string, content: string | null, userI
         }
 
         // 요약 저장
-        await db.insert(summaries).values({
-            noteId: noteId,
-            model: 'gemini-2.0-flash-001',
-            content: retryResult.data
-        })
+        if (retryResult.data) {
+            await db.insert(summaries).values({
+                noteId: noteId,
+                model: 'gemini-2.0-flash-001',
+                content: retryResult.data
+            })
+        }
 
         console.log('자동 요약 생성 성공:', noteId)
     } catch (error) {
@@ -220,23 +222,25 @@ async function generateAutoTags(noteId: string, content: string | null, userId?:
         }
 
         // 태그 파싱 및 정규화 (쉼표로 구분된 태그들을 배열로 변환)
-        const tagsArray = retryResult.data
-            .split(',')
-            .map(tag => tag.trim().toLowerCase()) // 소문자로 정규화
-            .filter(tag => tag.length > 0)
-            .slice(0, 6) // 최대 6개 태그로 제한
+        if (retryResult.data) {
+            const tagsArray = retryResult.data
+                .split(',')
+                .map(tag => tag.trim().toLowerCase()) // 소문자로 정규화
+                .filter(tag => tag.length > 0)
+                .slice(0, 6) // 최대 6개 태그로 제한
 
-        // 태그 저장
-        if (tagsArray.length > 0) {
-            await db.insert(noteTags).values(
-                tagsArray.map(tag => ({
-                    noteId: noteId,
-                    tag: tag
-                }))
-            )
+            // 태그 저장
+            if (tagsArray.length > 0) {
+                await db.insert(noteTags).values(
+                    tagsArray.map(tag => ({
+                        noteId: noteId,
+                        tag: tag
+                    }))
+                )
+            }
         }
 
-        console.log('자동 태그 생성 성공:', noteId, tagsArray)
+        console.log('자동 태그 생성 성공:', noteId)
     } catch (error) {
         // 에러 분류 및 로깅
         const aiError = classifyError(error instanceof Error ? error : new Error('알 수 없는 오류'))
@@ -299,7 +303,7 @@ export async function createNote(formData: FormData) {
     }
 
     // 노트 생성 성공 후 자동 요약 및 태그 생성
-    if (noteId) {
+    if (noteId && validatedData.content) {
         await generateAutoSummary(noteId, validatedData.content, user.id)
         await generateAutoTags(noteId, validatedData.content, user.id)
     }

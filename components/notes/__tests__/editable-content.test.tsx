@@ -62,7 +62,7 @@ describe('EditableSummary 컴포넌트', () => {
   })
 
   it('편집 모드에서 텍스트 영역이 표시되어야 함', () => {
-    const mockUseEditableContent = require('@/lib/notes/hooks').useEditableContent
+    const mockUseEditableContent = import('@/lib/notes/hooks').useEditableContent
     mockUseEditableContent.mockReturnValue({
       isEditing: true,
       value: '편집 중인 요약',
@@ -86,7 +86,7 @@ describe('EditableSummary 컴포넌트', () => {
   })
 
   it('에러 메시지가 표시되어야 함', () => {
-    const mockUseEditableContent = require('@/lib/notes/hooks').useEditableContent
+    const mockUseEditableContent = import('@/lib/notes/hooks').useEditableContent
     mockUseEditableContent.mockReturnValue({
       isEditing: true,
       value: '편집 중인 요약',
@@ -140,7 +140,7 @@ describe('EditableTags 컴포넌트', () => {
   })
 
   it('편집 모드에서 태그 입력 필드가 표시되어야 함', () => {
-    const mockUseEditableContent = require('@/lib/notes/hooks').useEditableContent
+    const mockUseEditableContent = import('@/lib/notes/hooks').useEditableContent
     mockUseEditableContent.mockReturnValue({
       isEditing: true,
       value: ['태그1', '태그2'],
@@ -164,7 +164,7 @@ describe('EditableTags 컴포넌트', () => {
   })
 
   it('태그 제거 버튼이 작동해야 함', () => {
-    const mockUseEditableContent = require('@/lib/notes/hooks').useEditableContent
+    const mockUseEditableContent = import('@/lib/notes/hooks').useEditableContent
     const mockUpdateValue = jest.fn()
     mockUseEditableContent.mockReturnValue({
       isEditing: true,
@@ -221,7 +221,7 @@ describe('EditableContent 컴포넌트', () => {
   it('편집 모드에서 변경사항 표시가 작동해야 함', () => {
     // Mock useState for isEditing
     const mockSetIsEditing = jest.fn()
-    jest.spyOn(require('react'), 'useState')
+    jest.spyOn(await import('react'), 'useState')
       .mockReturnValueOnce([false, mockSetIsEditing]) // isEditing
       .mockReturnValueOnce([false, jest.fn()]) // isSaving
       .mockReturnValueOnce([null, jest.fn()]) // error
@@ -237,7 +237,7 @@ describe('EditableContent 컴포넌트', () => {
 
   it('에러 메시지가 표시되어야 함', () => {
     // Mock useState for error
-    jest.spyOn(require('react'), 'useState')
+    jest.spyOn(await import('react'), 'useState')
       .mockReturnValueOnce([false, jest.fn()]) // isEditing
       .mockReturnValueOnce([false, jest.fn()]) // isSaving
       .mockReturnValueOnce(['저장 실패', jest.fn()]) // error

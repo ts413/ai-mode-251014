@@ -138,7 +138,7 @@ describe('에러 처리 로직', () => {
       expect(calculateRetryDelay(3, 1000)).toBe(8000)
     })
 
-    it('최대 지연 시간을 초과하지 않아야 함', () {
+    it('최대 지연 시간을 초과하지 않아야 함', () => {
       const result = calculateRetryDelay(10, 1000)
       expect(result).toBeLessThanOrEqual(30000)
     })

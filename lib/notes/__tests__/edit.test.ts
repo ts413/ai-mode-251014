@@ -33,7 +33,7 @@ describe('편집 서버 액션', () => {
       const mockSummary = { id: 'summary-123', content: '기존 요약' }
       const newContent = '새로운 요약'
 
-      const mockCreateClient = require('@/lib/supabase/server').createClient
+      const mockCreateClient = import('@/lib/supabase/server').createClient
       mockCreateClient.mockResolvedValue({
         auth: {
           getUser: jest.fn().mockResolvedValue({
@@ -43,7 +43,7 @@ describe('편집 서버 액션', () => {
         }
       })
 
-      const mockDb = require('@/lib/db/connection').db
+      const mockDb = import('@/lib/db/connection').db
       mockDb.select.mockReturnValue({
         from: jest.fn().mockReturnValue({
           where: jest.fn().mockReturnValue({
@@ -83,7 +83,7 @@ describe('편집 서버 액션', () => {
     it('요약 유효성 검증이 올바르게 작동해야 함', async () => {
       // Mock setup
       const mockUser = { id: 'user-123' }
-      const mockCreateClient = require('@/lib/supabase/server').createClient
+      const mockCreateClient = import('@/lib/supabase/server').createClient
       mockCreateClient.mockResolvedValue({
         auth: {
           getUser: jest.fn().mockResolvedValue({
@@ -93,7 +93,7 @@ describe('편집 서버 액션', () => {
         }
       })
 
-      const mockDb = require('@/lib/db/connection').db
+      const mockDb = import('@/lib/db/connection').db
       mockDb.select.mockReturnValue({
         from: jest.fn().mockReturnValue({
           where: jest.fn().mockReturnValue({
@@ -116,7 +116,7 @@ describe('편집 서버 액션', () => {
 
     it('인증 실패 시 에러를 반환해야 함', async () => {
       // Mock setup
-      const mockCreateClient = require('@/lib/supabase/server').createClient
+      const mockCreateClient = import('@/lib/supabase/server').createClient
       mockCreateClient.mockResolvedValue({
         auth: {
           getUser: jest.fn().mockResolvedValue({
@@ -142,7 +142,7 @@ describe('편집 서버 액션', () => {
       const mockNote = { id: 'note-123', userId: 'user-123' }
       const newTags = ['태그1', '태그2', '태그3']
 
-      const mockCreateClient = require('@/lib/supabase/server').createClient
+      const mockCreateClient = import('@/lib/supabase/server').createClient
       mockCreateClient.mockResolvedValue({
         auth: {
           getUser: jest.fn().mockResolvedValue({
@@ -152,7 +152,7 @@ describe('편집 서버 액션', () => {
         }
       })
 
-      const mockDb = require('@/lib/db/connection').db
+      const mockDb = import('@/lib/db/connection').db
       mockDb.select.mockReturnValue({
         from: jest.fn().mockReturnValue({
           where: jest.fn().mockReturnValue({
@@ -186,7 +186,7 @@ describe('편집 서버 액션', () => {
     it('태그 유효성 검증이 올바르게 작동해야 함', async () => {
       // Mock setup
       const mockUser = { id: 'user-123' }
-      const mockCreateClient = require('@/lib/supabase/server').createClient
+      const mockCreateClient = import('@/lib/supabase/server').createClient
       mockCreateClient.mockResolvedValue({
         auth: {
           getUser: jest.fn().mockResolvedValue({
@@ -196,7 +196,7 @@ describe('편집 서버 액션', () => {
         }
       })
 
-      const mockDb = require('@/lib/db/connection').db
+      const mockDb = import('@/lib/db/connection').db
       mockDb.select.mockReturnValue({
         from: jest.fn().mockReturnValue({
           where: jest.fn().mockReturnValue({
@@ -228,7 +228,7 @@ describe('편집 서버 액션', () => {
       const mockNote = { id: 'note-123', userId: 'user-123' }
       const inputTags = ['  태그1  ', 'TAG2', '태그3']
 
-      const mockCreateClient = require('@/lib/supabase/server').createClient
+      const mockCreateClient = import('@/lib/supabase/server').createClient
       mockCreateClient.mockResolvedValue({
         auth: {
           getUser: jest.fn().mockResolvedValue({
@@ -238,7 +238,7 @@ describe('편집 서버 액션', () => {
         }
       })
 
-      const mockDb = require('@/lib/db/connection').db
+      const mockDb = import('@/lib/db/connection').db
       mockDb.select.mockReturnValue({
         from: jest.fn().mockReturnValue({
           where: jest.fn().mockReturnValue({

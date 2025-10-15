@@ -92,8 +92,9 @@ describe('RegenerateButton 컴포넌트', () => {
     render(
       <RegenerateButton 
         onRegenerate={mockOnRegenerate}
-        children="커스텀 재생성"
-      />
+      >
+        커스텀 재생성
+      </RegenerateButton>
     )
     
     expect(screen.getByText('커스텀 재생성')).toBeInTheDocument()
@@ -171,7 +172,7 @@ describe('RegenerateAI 컴포넌트', () => {
   })
 
   it('재생성 횟수 정보를 표시해야 함', async () => {
-    const mockGetUserRegenerationCount = require('@/lib/notes/queries').getUserRegenerationCount
+    const mockGetUserRegenerationCount = import('@/lib/notes/queries').getUserRegenerationCount
     mockGetUserRegenerationCount.mockResolvedValue({
       currentCount: 5,
       limit: 10,
@@ -187,7 +188,7 @@ describe('RegenerateAI 컴포넌트', () => {
   })
 
   it('재생성 횟수 제한에 도달했을 때 경고를 표시해야 함', async () => {
-    const mockGetUserRegenerationCount = require('@/lib/notes/queries').getUserRegenerationCount
+    const mockGetUserRegenerationCount = import('@/lib/notes/queries').getUserRegenerationCount
     mockGetUserRegenerationCount.mockResolvedValue({
       currentCount: 10,
       limit: 10,
@@ -202,14 +203,14 @@ describe('RegenerateAI 컴포넌트', () => {
   })
 
   it('재생성 성공 시 onSuccess 콜백이 호출되어야 함', async () => {
-    const mockRegenerateAI = require('@/lib/notes/actions').regenerateAI
+    const { regenerateAI: mockRegenerateAI } = await import('@/lib/notes/actions')
     mockRegenerateAI.mockResolvedValue({
       success: true,
       summary: '테스트 요약',
       tags: ['태그1', '태그2']
     })
 
-    const mockGetUserRegenerationCount = require('@/lib/notes/queries').getUserRegenerationCount
+    const mockGetUserRegenerationCount = import('@/lib/notes/queries').getUserRegenerationCount
     mockGetUserRegenerationCount.mockResolvedValue({
       currentCount: 0,
       limit: 10,
@@ -231,13 +232,13 @@ describe('RegenerateAI 컴포넌트', () => {
   })
 
   it('재생성 실패 시 onError 콜백이 호출되어야 함', async () => {
-    const mockRegenerateAI = require('@/lib/notes/actions').regenerateAI
+    const { regenerateAI: mockRegenerateAI } = await import('@/lib/notes/actions')
     mockRegenerateAI.mockResolvedValue({
       success: false,
       error: '재생성 실패'
     })
 
-    const mockGetUserRegenerationCount = require('@/lib/notes/queries').getUserRegenerationCount
+    const mockGetUserRegenerationCount = import('@/lib/notes/queries').getUserRegenerationCount
     mockGetUserRegenerationCount.mockResolvedValue({
       currentCount: 0,
       limit: 10,

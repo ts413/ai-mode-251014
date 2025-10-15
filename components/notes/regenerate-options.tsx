@@ -83,7 +83,7 @@ export function RegenerateOptions({
         >
           <Zap className="h-3 w-3" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuContent className="w-48">
           <DropdownMenuItem
             onClick={() => handleRegenerate('summary')}
             disabled={disabled || isLoading}

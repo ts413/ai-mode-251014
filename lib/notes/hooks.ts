@@ -51,7 +51,7 @@ export function useAIStatus() {
 }
 
 // AI 처리 함수 래퍼
-export function useAIProcessor<T extends any[], R>(
+export function useAIProcessor<T extends unknown[], R>(
   processor: (...args: T) => Promise<R>
 ) {
   const aiStatus = useAIStatus()
@@ -169,7 +169,7 @@ export function useEditableContent<T>(
 export function useAutoSave<T>(
   value: T,
   onSave: (value: T) => Promise<void>,
-  delay: number = 1000
+  _delay: number = 1000
 ) {
   const [isSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)

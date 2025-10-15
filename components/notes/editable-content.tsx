@@ -10,7 +10,7 @@ import { EditableSummary } from './editable-summary'
 import { EditableTags } from './editable-tags'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Edit3, Save, X, Loader2 } from 'lucide-react'
+import { Edit3, Save, X } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface EditableContentProps {
@@ -37,7 +37,6 @@ export function EditableContent({
   regenerationResult
 }: EditableContentProps) {
   const [isEditing, setIsEditing] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [hasChanges, setHasChanges] = useState(false)
 
@@ -164,7 +163,7 @@ export function EditableContent({
           variant="outline"
           size="sm"
           onClick={stopEditing}
-          disabled={isSaving}
+          disabled={false}
         >
           <X className="h-3 w-3 mr-1" />
           편집 종료
@@ -172,14 +171,10 @@ export function EditableContent({
         
         <Button
           size="sm"
-          disabled={isSaving || !hasChanges}
+          disabled={!hasChanges}
           className="opacity-50 cursor-not-allowed"
         >
-          {isSaving ? (
-            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-          ) : (
-            <Save className="h-3 w-3 mr-1" />
-          )}
+          <Save className="h-3 w-3 mr-1" />
           저장 (개별 저장)
         </Button>
       </div>

@@ -6,7 +6,7 @@
 import { db } from '@/lib/db/connection'
 import { aiErrorLogs, type NewAIErrorLog } from '@/lib/db/schema/notes'
 import { AIError, normalizeErrorMessage } from './error-handler'
-import { eq, gte, desc } from 'drizzle-orm'
+import { eq, gte, desc, and } from 'drizzle-orm'
 
 export interface ErrorStats {
   totalErrors: number
@@ -31,8 +31,8 @@ export interface ErrorLogEntry {
 // 에러 로그 저장
 export async function logError(
   error: AIError,
-  noteId?: string,
   userId: string,
+  noteId?: string,
   retryCount: number = 0
 ): Promise<string> {
   try {
@@ -84,7 +84,12 @@ export async function getErrorStats(userId?: string, days: number = 30): Promise
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - days)
     
-    let query = db
+    const whereConditions = [gte(aiErrorLogs.createdAt, startDate)]
+    if (userId) {
+      whereConditions.push(eq(aiErrorLogs.userId, userId))
+    }
+    
+    const errors = await db
       .select({
         errorType: aiErrorLogs.errorType,
         severity: aiErrorLogs.severity,
@@ -92,13 +97,7 @@ export async function getErrorStats(userId?: string, days: number = 30): Promise
         resolvedAt: aiErrorLogs.resolvedAt
       })
       .from(aiErrorLogs)
-      .where(gte(aiErrorLogs.createdAt, startDate))
-    
-    if (userId) {
-      query = query.where(eq(aiErrorLogs.userId, userId))
-    }
-    
-    const errors = await query
+      .where(and(...whereConditions))
     
     const stats: ErrorStats = {
       totalErrors: errors.length,
@@ -159,18 +158,18 @@ export async function getErrorLogs(
   offset: number = 0
 ): Promise<ErrorLogEntry[]> {
   try {
-    let query = db
+    const whereConditions = []
+    if (userId) {
+      whereConditions.push(eq(aiErrorLogs.userId, userId))
+    }
+    
+    const logs = await db
       .select()
       .from(aiErrorLogs)
+      .where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
       .orderBy(desc(aiErrorLogs.createdAt))
       .limit(limit)
       .offset(offset)
-    
-    if (userId) {
-      query = query.where(eq(aiErrorLogs.userId, userId))
-    }
-    
-    const logs = await query
     
     return logs.map(log => ({
       id: log.id,
@@ -198,20 +197,19 @@ export async function analyzeErrorPatterns(userId?: string, days: number = 7): P
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - days)
     
-    let query = db
+    const whereConditions = [gte(aiErrorLogs.createdAt, startDate)]
+    if (userId) {
+      whereConditions.push(eq(aiErrorLogs.userId, userId))
+    }
+    
+    const errors = await db
       .select({
         errorType: aiErrorLogs.errorType,
         severity: aiErrorLogs.severity,
         createdAt: aiErrorLogs.createdAt
       })
       .from(aiErrorLogs)
-      .where(gte(aiErrorLogs.createdAt, startDate))
-    
-    if (userId) {
-      query = query.where(eq(aiErrorLogs.userId, userId))
-    }
-    
-    const errors = await query
+      .where(and(...whereConditions))
     
     // 가장 흔한 에러 타입
     const errorTypeCounts: Record<string, number> = {}

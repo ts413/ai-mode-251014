@@ -97,8 +97,8 @@ export function RegenerateAI({
         if (result.success) {
           aiStatus.setCompleted()
           onSuccess?.({
-            summary: result.summary,
-            tags: result.tags
+            summary: 'summary' in result ? result.summary : undefined,
+            tags: 'tags' in result ? result.tags : undefined
           })
           // 재생성 횟수 업데이트
           await fetchRegenerationCount()

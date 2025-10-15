@@ -29,7 +29,8 @@ export function SearchInput({
     const currentSort = searchParams.get('sort') || 'newest'
 
     // debounce된 검색 함수
-    const debouncedSearch = useDebounce(((searchQuery: string) => {
+    const debouncedSearch = useDebounce((...args: any[]) => {
+        const searchQuery = args[0] as string
         if (searchQuery.trim()) {
             saveSearchHistory(searchQuery)
         }
@@ -44,7 +45,7 @@ export function SearchInput({
         
         router.replace(`/notes?${params.toString()}`)
         setIsSearching(false)
-    }) as (searchQuery: string) => void, 300)
+    }, 300)
 
     // 검색어 변경 핸들러
     const handleQueryChange = (value: string) => {
