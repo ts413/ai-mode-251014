@@ -7,16 +7,13 @@ import { redirect } from 'next/navigation'
 function getSiteUrl() {
     // Vercel 배포 환경에서는 VERCEL_URL 사용
     if (process.env.VERCEL_URL) {
-        console.log('Using VERCEL_URL:', process.env.VERCEL_URL)
         return `https://${process.env.VERCEL_URL}`
     }
     // 환경변수에서 설정된 값 사용
     if (process.env.NEXT_PUBLIC_SITE_URL) {
-        console.log('Using NEXT_PUBLIC_SITE_URL:', process.env.NEXT_PUBLIC_SITE_URL)
         return process.env.NEXT_PUBLIC_SITE_URL
     }
     // 기본값 (개발 환경)
-    console.log('Using default localhost')
     return 'http://localhost:3000'
 }
 
@@ -169,11 +166,8 @@ export async function resetPasswordForEmail(formData: FormData) {
         }
     }
 
-    const siteUrl = getSiteUrl()
-    console.log('Reset password redirect URL:', `${siteUrl}/auth/reset-password`)
-    
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${siteUrl}/auth/reset-password`
+        redirectTo: `${getSiteUrl()}/auth/reset-password`
     })
 
     if (error) {

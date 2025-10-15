@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { headers } from 'next/headers'
 import {
     Card,
     CardContent,
@@ -30,23 +29,6 @@ function numberToKorean(num: number): string {
 }
 
 export default async function HomePage() {
-    // URL 파라미터 확인 (auth callback 처리)
-    const headersList = await headers()
-    const referer = headersList.get('referer') || ''
-    const url = new URL(referer || 'http://localhost:3000')
-    const code = url.searchParams.get('code')
-    const type = url.searchParams.get('type')
-    
-    // auth callback이 있는 경우 적절한 페이지로 리다이렉트
-    if (code) {
-        console.log('Auth callback detected:', { code, type })
-        if (type === 'recovery') {
-            redirect(`/auth/reset-password?code=${code}`)
-        } else {
-            redirect(`/auth/callback?code=${code}`)
-        }
-    }
-
     // 로그인 확인 - getUser()를 사용하여 서버에서 인증 확인
     const supabase = await createClient()
     const {

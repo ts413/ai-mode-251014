@@ -228,8 +228,13 @@ GOOGLE_API_KEY=your_google_api_key
 
 3. **중요**: Supabase Dashboard에서 Site URL 설정:
    - Supabase Dashboard → Authentication → URL Configuration
-   - Site URL을 Vercel 배포 URL로 변경 (예: `https://your-app.vercel.app`)
-   - Redirect URLs에 `https://your-app.vercel.app/auth/callback` 추가
+   - **Site URL**을 Vercel 배포 URL로 변경 (예: `https://your-app.vercel.app`)
+   - **Redirect URLs**에 다음 URL들을 추가:
+     - `https://your-app.vercel.app/auth/callback`
+     - `https://your-app.vercel.app/auth/reset-password`
+   - **Additional Redirect URLs**에 개발용 URL도 추가:
+     - `http://localhost:3000/auth/callback`
+     - `http://localhost:3000/auth/reset-password`
 
 4. 배포 후 환경 변수가 제대로 설정되었는지 확인
 
