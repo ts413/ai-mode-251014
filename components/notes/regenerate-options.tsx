@@ -77,15 +77,11 @@ export function RegenerateOptions({
 
       {/* 상세 옵션 드롭다운 */}
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled={disabled || isLoading}
-            className="h-8 px-2 text-xs"
-          >
-            <Zap className="h-3 w-3" />
-          </Button>
+        <DropdownMenuTrigger
+          className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-8 px-2 text-xs"
+          disabled={disabled || isLoading}
+        >
+          <Zap className="h-3 w-3" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
           <DropdownMenuItem
