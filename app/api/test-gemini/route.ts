@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { generateContent, createSummaryPrompt, createTagPrompt } from '@/lib/ai/gemini'
-
+ 
 export async function POST(request: NextRequest) {
   try {
     const { text } = await request.json()
