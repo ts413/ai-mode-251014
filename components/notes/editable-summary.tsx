@@ -53,7 +53,7 @@ export function EditableSummary({
     if (initialSummary !== undefined) {
       editableContent.updateInitialValue(initialSummary || '')
     }
-  }, [initialSummary, editableContent])
+  }, [initialSummary?.content || initialSummary]) // 실제 값만 의존성으로 사용
 
   // 편집 모드가 아닐 때
   if (!editableContent.isEditing) {
