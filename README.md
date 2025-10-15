@@ -1,4 +1,4 @@
-# AI 메모장 - Hands-on 강의 프로젝트
+# AI 메모장 - Hands-on 강의 프로젝트!
 
 Next.js, Supabase, Drizzle ORM을 활용한 AI 메모 관리 애플리케이션입니다.
 
