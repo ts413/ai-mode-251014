@@ -20,48 +20,67 @@ const MIN_SUMMARY_LENGTH = 50
 // 재생성 횟수 제한 (일일)
 const DAILY_REGENERATION_LIMIT = 10
 
-// 재생성 횟수 확인 함수
+// 재생성 횟수 확인 함수 (임시로 비활성화)
 async function checkRegenerationLimit(userId: string): Promise<{
     canRegenerate: boolean
     currentCount: number
     limit: number
     error?: string
 }> {
-    try {
-        // 오늘 날짜의 시작 시간 계산
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
-        
-        // 오늘 재생성 횟수 조회
-        const [result] = await db
-            .select({ count: count() })
-            .from(aiRegenerations)
-            .where(
-                and(
-                    eq(aiRegenerations.userId, userId),
-                    gte(aiRegenerations.createdAt, today)
-                )
-            )
-        
-        const currentCount = result?.count || 0
-        
-        return {
-            canRegenerate: currentCount < DAILY_REGENERATION_LIMIT,
-            currentCount,
-            limit: DAILY_REGENERATION_LIMIT,
-            error: currentCount >= DAILY_REGENERATION_LIMIT 
-                ? `일일 재생성 횟수 제한에 도달했습니다. (${currentCount}/${DAILY_REGENERATION_LIMIT})`
-                : undefined
-        }
-    } catch (error) {
-        console.error('재생성 횟수 확인 실패:', error)
-        return {
-            canRegenerate: false,
-            currentCount: 0,
-            limit: DAILY_REGENERATION_LIMIT,
-            error: '재생성 횟수를 확인할 수 없습니다'
-        }
+    // 임시로 비활성화 - ai_regenerations 테이블이 없어서 에러 발생
+    return {
+        canRegenerate: true,
+        currentCount: 0,
+        limit: DAILY_REGENERATION_LIMIT,
+        error: undefined
     }
+    
+    // try {
+    //     // 오늘 날짜의 시작 시간 계산
+    //     const today = new Date()
+    //     today.setHours(0, 0, 0, 0)
+        
+    //     // 오늘 재생성 횟수 조회
+    //     const [result] = await db
+    //         .select({ count: count() })
+    //         .from(aiRegenerations)
+    //         .where(
+    //             and(
+    //                 eq(aiRegenerations.userId, userId),
+    //                 gte(aiRegenerations.createdAt, today)
+    //             )
+    //         )
+        
+    //     const currentCount = Number(result?.count) || 0
+        
+    //     // 디버깅 로그 (개발 환경에서만)
+    //     if (process.env.NODE_ENV === 'development') {
+    //         console.log('재생성 횟수 체크:', {
+    //             userId,
+    //             today: today.toISOString(),
+    //             currentCount,
+    //             limit: DAILY_REGENERATION_LIMIT,
+    //             canRegenerate: currentCount < DAILY_REGENERATION_LIMIT
+    //         })
+    //     }
+        
+    //     return {
+    //         canRegenerate: currentCount < DAILY_REGENERATION_LIMIT,
+    //         currentCount,
+    //         limit: DAILY_REGENERATION_LIMIT,
+    //         error: currentCount >= DAILY_REGENERATION_LIMIT 
+    //             ? `일일 재생성 횟수 제한에 도달했습니다. (${currentCount}/${DAILY_REGENERATION_LIMIT})`
+    //             : undefined
+    //     }
+    // } catch (error) {
+    //     console.error('재생성 횟수 확인 실패:', error)
+    //     return {
+    //         canRegenerate: false,
+    //         currentCount: 0,
+    //         limit: DAILY_REGENERATION_LIMIT,
+    //         error: '재생성 횟수를 확인할 수 없습니다'
+    //     }
+    // }
 }
 
 // 재생성 횟수 조회 서버 액션
@@ -89,22 +108,25 @@ export async function getUserRegenerationCount(): Promise<{
     }
 }
 
-// 재생성 이력 저장 함수
+// 재생성 이력 저장 함수 (임시로 비활성화)
 async function saveRegenerationHistory(
     noteId: string, 
     userId: string, 
     type: 'summary' | 'tags' | 'both'
 ): Promise<void> {
-    try {
-        await db.insert(aiRegenerations).values({
-            noteId,
-            userId,
-            type
-        })
-    } catch (error) {
-        console.error('재생성 이력 저장 실패:', error)
-        // 이력 저장 실패는 재생성을 막지 않음
-    }
+    // 임시로 비활성화 - ai_regenerations 테이블이 없어서 에러 발생
+    return
+    
+    // try {
+    //     await db.insert(aiRegenerations).values({
+    //         noteId,
+    //         userId,
+    //         type
+    //     })
+    // } catch (error) {
+    //     console.error('재생성 이력 저장 실패:', error)
+    //     // 이력 저장 실패는 재생성을 막지 않음
+    // }
 }
 
 // 자동 요약 생성 헬퍼 함수 (에러 처리 통합)

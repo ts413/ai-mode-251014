@@ -5,7 +5,8 @@
 
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
+import { updateNote } from '@/lib/notes/actions'
 
 // AI 처리 상태 타입
 export type AIStatus = 'IDLE' | 'LOADING' | 'COMPLETED' | 'ERROR'
@@ -193,5 +194,85 @@ export function useAutoSave<T>(
     lastSaved,
     error,
     save
+  }
+}
+
+// 노트 편집용 자동 저장 훅
+export function useNoteAutoSave({
+  noteId,
+  initialTitle,
+  initialContent
+}: {
+  noteId: string
+  initialTitle: string
+  initialContent: string
+}) {
+  const [title, setTitle] = useState(initialTitle)
+  const [content, setContent] = useState(initialContent)
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
+  const [hasChanges, setHasChanges] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // 제목 변경 핸들러
+  const handleTitleChange = useCallback((newTitle: string) => {
+    setTitle(newTitle)
+    setHasChanges(true)
+    setSaveStatus('idle')
+  }, [])
+
+  // 내용 변경 핸들러
+  const handleContentChange = useCallback((newContent: string) => {
+    setContent(newContent)
+    setHasChanges(true)
+    setSaveStatus('idle')
+  }, [])
+
+  // 즉시 저장
+  const saveImmediately = useCallback(async () => {
+    if (!hasChanges) return
+
+    try {
+      setSaveStatus('saving')
+      setError(null)
+
+      const result = await updateNote(noteId, { title, content })
+      
+      if (result.success) {
+        setSaveStatus('saved')
+        setLastSavedAt(new Date())
+        setHasChanges(false)
+      } else {
+        setError(result.error || '저장에 실패했습니다')
+        setSaveStatus('error')
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '저장에 실패했습니다'
+      setError(errorMessage)
+      setSaveStatus('error')
+    }
+  }, [noteId, title, content, hasChanges])
+
+  // 자동 저장 (3초 후)
+  useEffect(() => {
+    if (!hasChanges) return
+
+    const timer = setTimeout(() => {
+      saveImmediately()
+    }, 3000)
+
+    return () => clearTimeout(timer)
+  }, [hasChanges, saveImmediately])
+
+  return {
+    title,
+    content,
+    saveStatus,
+    lastSavedAt,
+    hasChanges,
+    error,
+    handleTitleChange,
+    handleContentChange,
+    saveImmediately
   }
 }

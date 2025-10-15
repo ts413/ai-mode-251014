@@ -53,7 +53,7 @@ export function EditableTags({
   useEffect(() => {
     const tagStrings = initialTags.map(t => t.tag)
     editableContent.updateInitialValue(tagStrings)
-  }, [initialTags, editableContent])
+  }, [initialTags.map(t => t.tag).join('|')]) // join으로 단일 문자열 의존성 사용
 
   // 새 태그 추가
   const addTag = () => {

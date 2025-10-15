@@ -40,42 +40,59 @@ export function RegenerateAI({
   // 재생성 횟수 조회
   const fetchRegenerationCount = async () => {
     try {
+      console.log('재생성 횟수 조회 시작')
       const count = await getUserRegenerationCount()
+      console.log('재생성 횟수 조회 결과:', count)
       setRegenerationCount(count)
       return count
     } catch (error) {
       console.error('재생성 횟수 조회 실패:', error)
-      return null
+      // 에러 시에도 기본값 반환
+      const defaultCount = { currentCount: 0, limit: 10, canRegenerate: true }
+      setRegenerationCount(defaultCount)
+      return defaultCount
     }
   }
 
   // 재생성 처리 함수
   const handleRegenerate = async (type: RegenerateType) => {
-    // 재생성 횟수 확인
-    const count = await fetchRegenerationCount()
-    if (count && !count.canRegenerate) {
-      onError?.(`일일 재생성 횟수 제한에 도달했습니다. (${count.currentCount}/${count.limit})`)
-      return
-    }
+    console.log('재생성 시작:', { type, noteId })
+    
+    // 재생성 횟수 확인 (임시로 비활성화)
+    // const count = await fetchRegenerationCount()
+    // console.log('재생성 횟수 체크 결과:', count)
+    
+    // if (count && !count.canRegenerate) {
+    //   console.log('재생성 제한에 도달:', count)
+    //   onError?.(`일일 재생성 횟수 제한에 도달했습니다. (${count.currentCount}/${count.limit})`)
+    //   return
+    // }
 
     startTransition(async () => {
       try {
+        console.log('AI 상태를 로딩으로 설정')
         aiStatus.setLoading()
         
+        console.log('재생성 함수 호출:', type)
         let result
         switch (type) {
           case 'summary':
+            console.log('요약 재생성 호출')
             result = await regenerateSummary(noteId)
             break
           case 'tags':
+            console.log('태그 재생성 호출')
             result = await regenerateTags(noteId)
             break
           case 'both':
+            console.log('전체 재생성 호출')
             result = await regenerateAI(noteId)
             break
           default:
             throw new Error('알 수 없는 재생성 타입입니다')
         }
+        
+        console.log('재생성 결과:', result)
 
         if (result.success) {
           aiStatus.setCompleted()

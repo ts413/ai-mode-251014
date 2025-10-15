@@ -20,6 +20,11 @@ interface EditableContentProps {
   onSummaryChange?: (summary: string) => void
   onTagsChange?: (tags: string[]) => void
   className?: string
+  // 재생성 결과를 받을 수 있는 props
+  regenerationResult?: {
+    summary?: string
+    tags?: string[]
+  }
 }
 
 export function EditableContent({
@@ -28,7 +33,8 @@ export function EditableContent({
   initialTags = [],
   onSummaryChange,
   onTagsChange,
-  className = ''
+  className = '',
+  regenerationResult
 }: EditableContentProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -79,7 +85,7 @@ export function EditableContent({
           </div>
           <EditableSummary
             noteId={noteId}
-            initialSummary={initialSummary}
+            initialSummary={regenerationResult?.summary || initialSummary}
             onSummaryChange={handleSummaryChange}
           />
         </div>
@@ -100,7 +106,7 @@ export function EditableContent({
           </div>
           <EditableTags
             noteId={noteId}
-            initialTags={initialTags}
+            initialTags={regenerationResult?.tags ? regenerationResult.tags.map(tag => ({ tag })) : initialTags}
             onTagsChange={handleTagsChange}
           />
         </div>
