@@ -3,10 +3,12 @@ import postgres from 'postgres'
 import * as schema from './schema/notes'
 
 // Database connection
-const connectionString = process.env.DATABASE_URL!
+const connectionString = process.env.DATABASE_URL
 
 if (!connectionString) {
-    throw new Error('DATABASE_URL environment variable is not set')
+    console.error('DATABASE_URL environment variable is not set')
+    console.error('Available environment variables:', Object.keys(process.env).filter(key => key.includes('DATABASE') || key.includes('SUPABASE')))
+    throw new Error('DATABASE_URL environment variable is not set. Please check your Vercel environment variables.')
 }
 
 // Disable prefetch as it is not supported for "Transaction" pool mode

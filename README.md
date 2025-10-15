@@ -214,6 +214,26 @@ pnpm run db:push
 
 ## 🚀 배포
 
-Vercel을 사용한 배포는 [Vercel Platform](https://vercel.com/new)에서 간편하게 할 수 있습니다.
+### Vercel 배포
 
-배포 시 환경 변수 설정을 잊지 마세요!
+1. [Vercel Platform](https://vercel.com/new)에서 프로젝트를 연결
+2. 환경 변수 설정 (Vercel Dashboard → Project Settings → Environment Variables):
+
+```
+DATABASE_URL=postgresql://postgres.username:password@host:port/database
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
+GOOGLE_API_KEY=your_google_api_key
+```
+
+3. 배포 후 환경 변수가 제대로 설정되었는지 확인
+
+### 환경 변수 확인 방법
+
+배포 후 Vercel Functions 로그에서 다음 메시지가 나타나면 환경 변수가 제대로 설정되지 않은 것입니다:
+
+```
+DATABASE_URL environment variable is not set. Please check your Vercel environment variables.
+```
+
+이 경우 Vercel Dashboard에서 환경 변수를 다시 확인하고 재배포하세요.
